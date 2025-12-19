@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JSON to TOON Converter for E-Commerce websites</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+    textarea { width: 100%; height: 200px; }
+    button { padding: 10px; }
+    pre { background: #f4f4f4; padding: 10px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>JSON to TOON Converter: E-commerce edition </h1>
+  <p>Tailored for e-commerce: Upload your product catalog JSON and convert to TOON for AI agents.
+    The TOON format is a simple and efficient way to store product data for AI agents. So this site
+    will help you convert your product catalog JSON to TOON format for the AI agents to use.
+
+    This is the future of e-commerce: AI agents will be able to use your product catalog to answer questions,
+    generate product descriptions, and more. This is a step towards that future.
+  </p>
+  
+  <textarea id="jsonInput" placeholder="Paste your JSON here..."></textarea>
+  <input type="file" id="jsonFile" accept=".json">
+  <button onclick="convertToToon()">Convert to TOON</button>
+  
+  <h2>TOON Output:</h2>
+  <pre id="toonOutput"></pre>
+  <p id="stats"></p>
+  <button id="downloadBtn" style="display:none;" onclick="downloadToon()">Download .toon</button>
+
+  <script type="module">
+    import { encode } from '@toon-format/toon';
+
+    function convertJsonToToon(jsonStr) {
+      // Parse the JSON string
+      const jsonData = JSON.parse(jsonStr);
+      
+      // Encode to TOON format
+      const toonOutput = encode(jsonData);
+      
+      // Calculate approximate token counts
+      // Rough approximation: ~4 characters per token for English text
+      const jsonTokens = Math.ceil(jsonStr.length / 4);
+      const toonTokens = Math.ceil(toonOutput.length / 4);
+      const savings = jsonTokens - toonTokens;
+      
+      return {
+        toon: toonOutput,
+        stats: {
+          savings: savings,
+          jsonTokens: jsonTokens,
+          toonTokens: toonTokens
+        }
+      };
+    }
+
+    window.convertToToon = function() {
+      let jsonInput = document.getElementById('jsonInput').value;
+      const fileInput = document.getElementById('jsonFile').files[0];
+      if (fileInput) {
+        const reader = new FileReader();
+        reader.onload = (e) => processConversion(e.target.result);
+        reader.readAsText(fileInput);
+      } else {
+        processConversion(jsonInput);
+      }
+    };
+
+    function processConversion(jsonStr) {
+      try {
+        const result = convertJsonToToon(jsonStr);
+        document.getElementById('toonOutput').textContent = result.toon;
+        document.getElementById('stats').textContent = `Estimated token savings: ${result.stats.savings} (JSON: ${result.stats.jsonTokens} tokens, TOON: ${result.stats.toonTokens} tokens)`;
+        document.getElementById('downloadBtn').style.display = 'block';
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    window.downloadToon = function() {
+      const toonText = document.getElementById('toonOutput').textContent;
+      const blob = new Blob([toonText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'catalog.toon';
+      a.click();
+    };
+  </script>
+</body>
+</html>
